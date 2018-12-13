@@ -10,7 +10,8 @@
         "vlucas/phpdotenv": "~2.2",
         "sentry/sentry-laravel": "^0.11.0",
         "lcobucci/jwt": "^3.2",
-        "firebase/php-jwt": "^5.0"
+        "firebase/php-jwt": "^5.0",
+        "ext-memcached":"*"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
