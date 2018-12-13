@@ -80,7 +80,7 @@ return [
         'pgsql' => [
             'driver'   => 'pgsql',
             'host'     => env('DB_HOST', $pgsql),
-            'port'     => env('DB_PORT', ''),
+            'port'     => env('DB_PORT', 5432),
             'database' => env('DB_DATABASE', $database),
             'username' => env('DB_USERNAME', $username),
             'password' => env('DB_PASSWORD', $password),
