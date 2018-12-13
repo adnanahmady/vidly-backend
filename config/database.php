@@ -1,10 +1,10 @@
 <?php
 $url = parse_url(getenv("DATABASE_URL"));
-var_dump($url);
 
 $host = $url["host"];
 $username = $url["user"];
 $password = $url["pass"];
+$port = $url["port"];
 $database = substr($url["path"], 1);
 
 return [
@@ -81,7 +81,7 @@ return [
         'pgsql' => [
             'driver'   => 'pgsql',
             'host'     => env('DB_HOST', $host),
-            'port'     => env('DB_PORT', 5432),
+            'port'     => env('DB_PORT', $port),
             'database' => env('DB_DATABASE', $database),
             'username' => env('DB_USERNAME', $username),
             'password' => env('DB_PASSWORD', $password),
