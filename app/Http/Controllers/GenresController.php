@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Genre;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 
 class GenresController extends Controller
 {
@@ -36,11 +36,13 @@ class GenresController extends Controller
     public function store(Request $request)
     {
       $validator = Validator::make($request->all(), [
+        'slug' => 'required|string|unique:genres,slug',
         'name' => 'required|string|unique:genres,name',
       ]);
   
       if (!$validator->fails()) {
         $genre = Genre::insert([
+          'slug' => $request->slug,
           'name' => $request->name,
           'created_at' => date("Y-m-d H:i:s"),
         ]);
