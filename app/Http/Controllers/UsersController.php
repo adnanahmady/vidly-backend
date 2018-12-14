@@ -62,12 +62,13 @@ class UsersController extends Controller
     $validator = Validator::make($request->all(), [
       'email' => 'required|email|unique:users,email',
       'username' => 'required',
-      'password' => 'required|min:5'
+      'password' => 'required|min:5',
+      'is_admin' => 'required'
     ]);
 
     $params = $request->all();
     $params['password'] = Hash::make($params['password'], ['rounds' => 10]);
-    $params['is_admin'] = false;
+    $params['is_admin'] = $request->is_admin ? $request->is_admin : false;
 
     if (!$validator->fails()) {
       if ($user_id = User::insertGetId($params)) {
