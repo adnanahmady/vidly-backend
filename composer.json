@@ -7,7 +7,6 @@
     "require": {
         "php": ">=7.0.0",
         "ext-memcached":"*",
-        "ext-pgsql":"*",
         "ext-pdo_pgsql":"*",
         "laravel/lumen-framework": "5.5.*",
         "vlucas/phpdotenv": "~2.2",
