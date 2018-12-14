@@ -21,7 +21,6 @@ class CreateMoviesTable extends Migration
             $table->float('number_in_stock');
             $table->float('daily_rental_rate');
             $table->string('publish_date')->nullable();
-            $table->boolean('like');
             $table->timestamps();
         });
     }

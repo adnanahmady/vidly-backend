@@ -31,6 +31,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     ];
 
     public function movies() {
-        return $this->hasMany('App\Movie', 'user_id');
+        return $this->hasManyMany('App\Movie', 'user_id');
+    }
+
+    public function likes() {
+        return $this->belongsToMany('App\Movie', 'likes', 'user_id', 'movie_id')->withPivot('created_at');
     }
 }

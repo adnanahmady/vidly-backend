@@ -25,7 +25,6 @@ class Movie extends Model implements AuthenticatableContract, AuthorizableContra
         'genre_id',
         'user_id',
         'publish_data',
-        'like',
     ];
 
 
@@ -46,6 +45,10 @@ class Movie extends Model implements AuthenticatableContract, AuthorizableContra
     }
 
     public function user() {
-        return $this->belognsTo('App\User', 'user_id', 'id');
+        return $this->belongsTo('App\User', 'user_id', 'id');
+    }
+
+    public function likes() {
+        return $this->belongsToMany('App\User', 'likes', 'movie_id', 'user_id')->withPivot('created_at');
     }
 }

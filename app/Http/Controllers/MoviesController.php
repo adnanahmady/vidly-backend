@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Movie;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
@@ -23,7 +24,9 @@ class MoviesController extends Controller
 
   public function index()
   {
-    $data = Movie::with('genre')->get();
+    $data = Movie::with(['genre'])
+      ->withCount('likes as like')
+      ->get();
 
     return response()->json($data);
   }
@@ -38,8 +41,7 @@ class MoviesController extends Controller
       ], 400);
     }
 
-    $data = Movie::where(['id' => $id])
-      ->first();
+    $data = Movie::where(['id' => $id])->first();
 
     if (!$data) {
       return response()->json([
@@ -63,6 +65,7 @@ class MoviesController extends Controller
     }
 
     $data = Movie::with('genre')
+      ->withCount('likes as like')
       ->where(['id' => $id])
       ->first();
 
@@ -80,7 +83,6 @@ class MoviesController extends Controller
   {
     $validator = Validator::make($request->all(), [
       'title' => 'required|string',
-      'like' => 'boolean',
       'number_in_stock' => 'required|numeric|min:0|max:100',
       'daily_rental_rate' => 'required|numeric|min:0|max:10',
       'genre_id' => 'required|integer|exists:genres,id',
@@ -89,7 +91,6 @@ class MoviesController extends Controller
     if (!$validator->fails()) {
       $movie = Movie::insertGetId([
         'title' => $request->title,
-        'like' => $request->like,
         'number_in_stock' => $request->number_in_stock,
         'daily_rental_rate' => $request->daily_rental_rate,
         'genre_id' => $request->genre_id,
@@ -117,10 +118,9 @@ class MoviesController extends Controller
     $validator = Validator::make($request->all(), [
       'id' => 'required|integer|exists:movies,id',
       'title' => 'required|string',
-      'like' => 'boolean',
       'number_in_stock' => 'required|numeric|min:0|max:100',
       'daily_rental_rate' => 'required|numeric|min:0|max:10',
-      'genre_id' => 'required|integer|exists:genres,id'
+      'genre_id' => 'required|integer|exists:genres,id',
     ]);
 
     $_id = $request->id;
@@ -129,10 +129,10 @@ class MoviesController extends Controller
     if (!$validator->fails() && $id === $_id) {
       $movie = Movie::where(['id' => $id])->update([
         'title' => $request->title,
-        'like' => $request->like,
         'number_in_stock' => $request->number_in_stock,
         'daily_rental_rate' => $request->daily_rental_rate,
         'genre_id' => $request->genre_id,
+        'updated_at' => date("Y-m-d H:i:s"),
       ]);
 
       if ($movie) {
@@ -160,22 +160,25 @@ class MoviesController extends Controller
   {
     $validator = Validator::make($request->all(), [
       'id' => 'required|exists:movies,id',
-      'like' => 'required',
     ]);
 
-    $like = $request->like;
-    settype($like, 'boolean');
     $_id = $request->id;
     settype($_id, 'string');
 
     if (!$validator->fails() && $id === $_id) {
-      $movie = Movie::where(['id' => $_id])
-        ->update(['like' => $like]);
+      $like = Auth::user()->likes()->toggle($_id, ['created_at' => date('Y-m-d H:i:s')]);
 
-      if ($movie) {
+      if ($like['attached']) {
         return response()->json([
           'status' => 'success',
-          'message' => 'Movie`s Like Update was Successfuly!!'
+          'message' => 'Movie liked',
+          'like' => true
+        ]);
+      } elseif ($like['detached']) {
+        return response()->json([
+          'status' => 'success',
+          'message' => 'Movie disliked',
+          'like' => false
         ]);
       }
     } elseif ($id !== $_id) {
@@ -197,7 +200,7 @@ class MoviesController extends Controller
   {
     $token = $request->header('x-auth-token');
     $token = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
-    if (! $token->is_admin) {
+    if (!$token->is_admin) {
       return response()->json([
         'status' => 'error',
         'message' => 'data can not be deleted'
