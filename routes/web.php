@@ -24,13 +24,13 @@ $router->group(['middleware' => 'cors', 'prefix' => '/api'], function() use ($ro
     $router->get('/genres', 'GenresController@index');
     $router->get('/genres/{id}', 'GenresController@getGenre');
     $router->get('/movies', 'MoviesController@index');
+    $router->get('/movies/{id}', 'MoviesController@getMovie');
+    $router->get('/movies/{id}/with/genre', 'MoviesController@getMovieWithGenre');
 
     $router->group(['middleware' => 'auth'], function ($router) {
         $router->get('/users', 'UsersController@index');
         $router->get('/users/logout', 'UsersController@logout');
         $router->get('/users/{id}', 'UsersController@userMovie');
-        $router->get('/movies/{id}', 'MoviesController@getMovie');
-        $router->get('/movies/{id}/with/genre', 'MoviesController@getMovieWithGenre');
         $router->post('/movies/add', 'MoviesController@store');
         $router->delete('/movies/{id}', 'MoviesController@destroy');
         $router->put('/movies/{id}', 'MoviesController@edit');
