@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\RelationNotFoundException;
 use App\Genre;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Exceptions\TwoTypeException;
 
 class GenresController extends Controller
 {
@@ -34,25 +35,17 @@ class GenresController extends Controller
         ->where(['id' => $id])
         ->first();
     } catch (RelationNotFoundException $exception) {
-      return response()->json([
-        'status' => 'error',
-        'message' => 'there wase some problem'
-      ], 400);
+      throw new RelationNotFoundException(
+        'there wase some problem',
+        400
+      );
     } catch (Exception $exception) {
-      if (env('APP_DEBUG', false)) {
-        return response()->json([
-          'status' => 'error',
-          'message' => $exception->getMessage,
-          'code' => $exception->getCode()
-        ], 400);
-      }
-
-      return response()->json([
-        'status' => 'error',
-        'message' => 'it seems there is some problem'
-      ], 400);
+      throw new TwoTypeException(
+        'it seems there is some problem',
+        $exception->getMessage(),
+        400
+      );
     }
-
 
     return response()->json($data);
   }
@@ -74,16 +67,16 @@ class GenresController extends Controller
       if ($genre) {
         return response()->json([
           'status' => 'success',
-          'message' => 'Genre Added Successfuly!!'
+          'message' => 'Genre Added Successfuly'
         ]);
       }
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'An error occured during Adding Genre!!',
-      'devMessage' => $validator->errors()
-    ]);
+    throw new ValidateException(
+      'An error occured during Adding Genre',
+      $validator,
+      400
+    );
   }
 
   public function edit(Request $request, $id)
@@ -101,16 +94,16 @@ class GenresController extends Controller
       if ($genre) {
         return response()->json([
           'status' => 'success',
-          'message' => 'Genre Updated Successfuly!!'
+          'message' => 'Genre Updated Successfuly'
         ]);
       }
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'An error occured during Updating Genre!!',
-      'devMessage' => $validator->errors()
-    ]);
+    throw new ValidateException(
+      'An error occured during Updating Genre',
+      $validator,
+      400
+    );
   }
 
   public function destroy(Request $request, $id)
@@ -130,15 +123,15 @@ class GenresController extends Controller
       if ($genre) {
         return response()->json([
           'status' => 'success',
-          'message' => 'Genre Deleted Successfuly!!'
+          'message' => 'Genre Deleted Successfuly'
         ]);
       }
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'An error occured during Deleting Genre!!',
-      'devMessage' => $validator->errors()
-    ]);
+    throw new ValidateException(
+      'An error occured during Deleting Genre',
+      $validator,
+      400
+    );
   }
 }

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use \Exception;
 use App\Movie;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Validator;
 use Sentry\SentryLaravel\SentryFacade;
-use Illuminate\Validation\ValidationException;
+use App\Exceptions\ValidateException;
+use App\Exceptions\TwoTypeException;
 
 class MoviesController extends Controller
 {
@@ -34,21 +36,13 @@ class MoviesController extends Controller
   public function getMovie($id)
   {
     if (preg_match("/[\D+]+/", $id)) {
-      return response()->json([
-        'status' => 'error',
-        'message' => '',
-        'devMessage' => 'movie id must be integer'
-      ], 400);
+      throw new Exception('movie id must be integer', 400);
     }
 
     $data = Movie::where(['id' => $id])->first();
 
     if (!$data) {
-      return response()->json([
-        'status' => 'error',
-        'message' => '',
-        'devMessage' => 'movie does not exist'
-      ], 404);
+      throw new Exception('movie does not exist', 404);
     }
 
     return response()->json($data);
@@ -57,11 +51,7 @@ class MoviesController extends Controller
   public function getMovieWithGenre($id)
   {
     if (preg_match("/[\D+]+/", $id)) {
-      return response()->json([
-        'status' => 'error',
-        'message' => '',
-        'devMessage' => 'movie id must be integer'
-      ], 400);
+      throw new Exception('movie id must be integer', 400);
     }
 
     $data = Movie::with('genre')
@@ -70,12 +60,9 @@ class MoviesController extends Controller
       ->first();
 
     if (!$data) {
-      return response()->json([
-        'status' => 'error',
-        'message' => '',
-        'devMessage' => 'movie does not exist'
-      ], 404);
+      throw new Exception('movie does not exist', 404);
     }
+
     return response()->json($data);
   }
 
@@ -106,11 +93,11 @@ class MoviesController extends Controller
       }
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'there was some problems with Adding movie',
-      'devMessage' => $validator->errors()
-    ], 400);
+    throw new ValidateException(
+      'there was some problems with Adding movie', 
+      $validator,
+      400
+    );
   }
 
   public function edit(Request $request, $id)
@@ -142,18 +129,18 @@ class MoviesController extends Controller
         ]);
       }
     } elseif ($id !== $_id) {
-      return response()->json([
-        'status' => 'error',
-        'message' => 'there wase a problem during Editing the movie',
-        'devMessage' => 'id`s must be the same'
-      ], 400);
+      throw new TwoTypeException(
+        'there wase a problem during Editing the movie',
+        'id`s must be the same',
+        400
+      );
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'there was some problems with Editing movie',
-      'devMessage' => $validator->errors()
-    ], 400);
+    throw new ValidateException(
+      'there was some problems with Editing movie',
+      $validator,
+      400
+    );
   }
 
   public function setLike(Request $request, $id)
@@ -182,18 +169,18 @@ class MoviesController extends Controller
         ]);
       }
     } elseif ($id !== $_id) {
-      return response()->json([
-        'status' => 'error',
-        'message' => 'there wase a problem during Updating the movie`s like',
-        'devMessage' => 'id`s must be the same'
-      ], 400);
+      throw new TwoTypeException(
+        'there wase a problem during Updating the movie`s like',
+        'id`s must be the same',
+        400
+      );
     }
-
-    return response()->json([
-      'status' => 'error',
-      'message' => 'there was some problems with updating movies like',
-      'devMessage' => $validator->errors()
-    ], 400);
+    
+    throw new ValidateException(
+      'there was some problems with updating movies like',
+      $validator,
+      400
+    );
   }
 
   public function destroy(Request $request, $id)
@@ -201,10 +188,10 @@ class MoviesController extends Controller
     $token = $request->header('x-auth-token');
     $token = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
     if (!$token->is_admin) {
-      return response()->json([
-        'status' => 'error',
-        'message' => 'data can not be deleted'
-      ], 400);
+      throw new Exception(
+        'data can not be deleted',
+        400
+      );
     }
 
     $validator = Validator::make($request->all(), [
@@ -226,17 +213,17 @@ class MoviesController extends Controller
         ]);
       }
     } elseif ($id !== $_id) {
-      return response()->json([
-        'status' => 'error',
-        'message' => 'there wase a problem during deleteing the movie',
-        'devMessage' => 'id`s must be the same'
-      ], 400);
+      throw new TwoTypeException(
+        'there wase a problem during deleteing the movie',
+        'id`s must be the same',
+        400
+      );
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'movie is already Deleted',
-      'devMessage' => $validator->errors()
-    ], 404);
+    throw new ValidateException(
+      'movie is already Deleted',
+      $validator,
+      404
+    );
   }
 }

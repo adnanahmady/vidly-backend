@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Auth;
 use App\Http\Controllers\AuthController;
+use App\Exceptions\TwoTypeException;
 
 class UsersController extends Controller
 {
@@ -33,10 +34,10 @@ class UsersController extends Controller
       ]);
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'user have no movies yet'
-    ]);
+    throw new Exception(
+      'user have no movies yet',
+      400
+    );
   }
 
   public function userMovie($id)
@@ -51,10 +52,10 @@ class UsersController extends Controller
       ]);
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'there is no movie with this id'
-    ]);
+    throw new Exception(
+      'there is no movie with this id',
+      400
+    );
   }
 
   public function register(Request $request)
@@ -82,14 +83,18 @@ class UsersController extends Controller
         ])->header('x-auth-token', $params['token']);
       }
     } else {
-      return response()->json([
-        'status' => 'error',
-        'message' => 'expected',
-        'result' => $validator->errors()
-      ], 401);
+      throw new ValidateException(
+        'expected error',
+        $validator,
+        401
+      );
     }
 
-    return response()->json(['status' => 'error', 'message' => ['unexpected' => 'there wase some problems']], 401);
+    throw new TwoTypeException(
+      'unexpected error',
+      'there wase some problems',
+      401
+    );
   }
 
   public function login(Request $request)
@@ -112,10 +117,10 @@ class UsersController extends Controller
       }
     }
 
-    return response()->json([
-      'status' => 'error',
-      'message' => 'Email OR Password Is Incorract',
-      'result' => $validator->errors()
-    ], 401);
+    throw new ValidateException(
+      'Email OR Password Is Incorract',
+      $validator,
+      401
+    );
   }
 }
